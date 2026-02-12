@@ -1,44 +1,166 @@
-<div align="center">
+<p align="center">
+  <img src="https://images2.imgbox.com/96/a8/THkokCjt_o.png" alt="DNS Logo" width="220" />
+  <br/>
+  <img src="https://images2.imgbox.com/3b/7d/QEI3091q_o.png" alt="Profile Avatar" width="120" />
+</p>
 
-<div style="position: relative; width: 160px; height: 160px;">
-  <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #20C20E; box-shadow: 0 0 15px #20C20E, inset 0 0 15px #20C20E; animation: pulse 2s infinite alternate;"></div>
-  <img src="https://images2.imgbox.com/3b/7d/QEI3091q_o.png" width="150" style="border-radius: 50%; padding: 5px; z-index: 10; position: relative;" alt="bolmdev" />
-</div>
+# BOLMDEV — Personal Tech Lab
 
-<style>
-@keyframes pulse {
-  0% { box-shadow: 0 0 10px #20C20E, inset 0 0 10px #20C20E; transform: rotate(0deg); }
-  100% { box-shadow: 0 0 30px #20C20E, inset 0 0 20px #20C20E; transform: rotate(360deg); }
-}
-</style>
-
-# 🟢 BOLMDEV: DNS ARCHITECT & PERFORMANCE ENGINEER
-> **"السرعة ليست خياراً، بل هي حق مشروع لكل مستخدم"**
+**Technology enthusiast lab: practical notes on DNS, basic Windows network tuning, and safe experimentation.**  
+This repository is a personal learning project (experimental). Not intended as production infrastructure.
 
 ---
 
-### 🌐 دليل الـ DNS الشامل (للمحترفين والمبتدئين)
-الـ DNS هو "مترجم" الويب. بلاصت ما تحفظ أرقام IP معقدة، هو كيرد ليك `google.com` لـ عنوان رقمي. هادو هما "العمالقة" لي كنخدمو بيهم:
+## Table of Contents
 
-| Provider | DNS Primary | DNS Secondary | Speciality |
-| :--- | :--- | :--- | :--- |
-| **Cloudflare** | `1.1.1.1` | `1.0.0.1` | الأسرع عالمياً + الخصوصية ⚡ |
-| **Google** | `8.8.8.8` | `8.8.4.4` | الأكثر استقراراً 🌍 |
-| **OpenDNS** | `208.67.222.222` | `208.67.220.220` | الحماية من المواقع الضارة 🛡️ |
-| **AdGuard** | `94.140.14.14` | `94.140.15.15` | قطع الإعلانات من الجدر 🚫 |
+- [About](#about)
+- [Project Goals](#project-goals)
+- [DNS Resolver Reference](#dns-resolver-reference)
+- [PowerShell Test Script](#powershell-test-script)
+- [How to Test](#how-to-test)
+- [Rollback & Safety](#rollback--safety)
+- [Contributing](#contributing)
+- [License & Contact](#license--contact)
 
 ---
 
-### 🛠️ سكريبت "النيترو" الخارق (PowerShell Optimization)
-هاد السكريبت كيدير 3 ديال الحوايج فدقة وحدة: كيمسح الكاش، كيبدل الـ DNS لـ Cloudflare، وكيفعل تقنيات تسريع TCP فـ قلب الويندوز.
+## About
+
+This README contains compact, actionable guidance to experiment with DNS configuration and minimal Windows network adjustments. The content is intentionally concise, easy to audit, and reversible.
+
+**Audience:** learners, hobbyists, and engineers who want a safe place to experiment.  
+**Status:** Experimental / Learning
+
+---
+
+## Project Goals
+
+- Document practical DNS choices and use cases.
+- Provide a small, auditable PowerShell snippet to test tweaks locally.
+- Emphasize safety, rollback, and reproducibility.
+- Keep the documentation minimal and developer-friendly.
+
+---
+
+## DNS Resolver Reference
+
+Choose a primary + secondary resolver pair depending on your objective:
+
+| Provider     | Primary IP       | Secondary IP      | Use Case                                 |
+|--------------|------------------|-------------------|-------------------------------------------|
+| Cloudflare   | `1.1.1.1`        | `1.0.0.1`         | Low latency, privacy-focused              |
+| Google DNS   | `8.8.8.8`        | `8.8.4.4`         | Wide availability and reliability         |
+| AdGuard DNS  | `94.140.14.14`   | `94.140.15.15`    | Blocking ads & trackers at DNS level      |
+| OpenDNS      | `208.67.222.222` | `208.67.220.220`  | Policy/filtering for managed environments |
+
+**Recommendation:** Test a pair on one machine first. Keep notes of previous settings.
+
+---
+
+## PowerShell Test Script
+
+> **Run only on a personal/test machine.** Open PowerShell **as Administrator**. Review the code before executing.
 
 ```powershell
-# 🚀 Run as Administrator for God-Mode Speed
-Write-Host "--- Initializing System Warp Speed ---" -ForegroundColor Cyan
-# 1. تخصيص الـ DNS لجميع كروت الشبكة
-Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Set-DnsClientServerAddress -ServerAddresses ("1.1.1.1", "8.8.8.8")
-# 2. تفعيل بروتوكول التسريع Experimental
-netsh int tcp set global autotuninglevel=experimental
-# 3. تنظيف شامل للعوائق
-ipconfig /flushdns; nbtstat -R; nbtstat -RR; netsh int ip reset; netsh winsock reset
-Write-Host "--- System Optimized by BolmDev ---" -ForegroundColor Green
+<#
+  BOLMDEV: Set-TurboMode
+  Purpose: Minimal, reversible network adjustments (TCP autotuning + DNS)
+  Usage: Paste into an elevated PowerShell session and run Set-TurboMode
+#>
+
+function Set-TurboMode {
+    [CmdletBinding()]
+    param(
+        [string[]] $DnsServers = @('1.1.1.1','8.8.8.8')
+    )
+
+    Write-Host "[*] BOLMDEV: Starting network adjustments..." -ForegroundColor Green
+
+    try {
+        # 1) TCP autotuning (non-destructive; reversible)
+        netsh int tcp set global autotuninglevel=experimental | Out-Null
+
+        # 2) Enable RSS if available (non-destructive)
+        netsh int tcp set global rss=enabled | Out-Null
+
+        # 3) Set DNS servers for all active physical adapters
+        $adapters = Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'Up'}
+        foreach ($a in $adapters) {
+            try {
+                Set-DnsClientServerAddress -InterfaceIndex $a.ifIndex -ServerAddresses $DnsServers -ErrorAction Stop
+                Write-Host "  [+] Adapter '$($a.Name)' -> $($DnsServers -join ', ')" -ForegroundColor Yellow
+            } catch {
+                Write-Warning "  [!] Could not update adapter '$($a.Name)': $_"
+            }
+        }
+
+        # 4) Flush caches to apply changes immediately
+        ipconfig /flushdns | Out-Null
+        netsh winsock reset | Out-Null
+
+        Write-Host "[✓] BOLMDEV: Adjustments applied. Reboot recommended for full effect." -ForegroundColor Green
+    } catch {
+        Write-Error "[!] BOLMDEV: Error during adjustments: $_"
+    }
+}
+Example usage
+
+# Run in elevated PowerShell
+Set-TurboMode -DnsServers @('1.1.1.1','8.8.8.8')
+
+How to Test
+
+DNS resolution
+
+Resolve-DnsName example.com
+
+
+Latency check
+
+ping -n 6 1.1.1.1
+
+
+Application & browser checks
+
+Open several sites and verify they load normally.
+
+Confirm no captive portal or ISP DNS interception issues.
+
+Rollback & Safety
+
+Rollback DNS to automatic (DHCP):
+
+Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'Up'} | ForEach-Object {
+  Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ResetServerAddresses
+}
+
+
+Notes
+
+Do not run untrusted scripts.
+
+Keep a short runbook: note current DNS settings before changes.
+
+Test on one machine or a small test group before wider rollout.
+
+Some driver-level features (e.g., RSS) require NIC and driver support.
+
+Contributing
+
+Small, well-documented changes are welcome. Suggested workflow:
+
+Fork the repository.
+
+Create a feature branch: git checkout -b feature/your-change.
+
+Submit a concise PR with testing notes.
+
+License & Contact
+
+License: MIT (or replace with your preferred license).
+
+Maintainer: BOLMDEV — open an issue for questions or improvements.
+
+This README is intentionally minimal and follows common open-source conventions for clarity and easy adoption.
+
+
