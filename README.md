@@ -10,6 +10,16 @@
 This repository is a personal learning project (experimental). Not intended as production infrastructure.
 
 ---
+## Stack & Environment
+
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white)
+![Cloudflare DNS](https://img.shields.io/badge/Cloudflare_DNS-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![DNS over HTTPS](https://img.shields.io/badge/DNS_over_HTTPS-005571?style=for-the-badge)
+![IPv6 Ready](https://img.shields.io/badge/IPv6-Ready-2E8B57?style=for-the-badge)
+
 
 ## Table of Contents
 
