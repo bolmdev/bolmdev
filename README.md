@@ -3,7 +3,8 @@
   <br/>
   <img src="https://images2.imgbox.com/3b/7d/QEI3091q_o.png" alt="Profile Avatar" width="120" />
 </p>
-# EV — Personal Tech Lab
+
+    # EV — Personal Tech Lab
 
 **Technology enthusiast lab: practical notes on DNS, basic Windows network tuning, and safe experimentation.**  
 This repository is a personal learning project (experimental). Not intended as production infrastructure.
